@@ -8,6 +8,6 @@ TWEAK_NAME = WatusiServiceDiag
 WatusiServiceDiag_FILES = Tweak.x
 WatusiServiceDiag_CFLAGS = -fobjc-arc -Wall -Wextra -I$(THEOS_PROJECT_DIR)
 WatusiServiceDiag_FRAMEWORKS = Foundation
-WatusiServiceDiag_LIBRARIES = proc notify
+WatusiServiceDiag_LIBRARIES = proc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
