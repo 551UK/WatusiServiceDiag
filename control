@@ -1,0 +1,9 @@
+Package: com.551.watusiservicediag
+Name: WatusiServiceDiag
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Diagnostic logger for WhatsApp/Watusi ServiceExtension failures. Records Jetsam memory-limit assignments, verifies the kernel's effective limits, samples ServiceExtension physical footprint, and logs common crash/exit paths. Does not change memory limits.
+Maintainer: 551
+Author: 551
+Section: Tweaks
+Depends: ellekit
