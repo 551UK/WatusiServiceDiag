@@ -7,7 +7,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -56,9 +56,29 @@ jobs:
           test "$(dpkg-deb -f "$DEB" Architecture)" = 'iphoneos-arm64'
           test "$(dpkg-deb -f "$DEB" Package)" = 'com.551.watusiservicediag'
 
-      - name: Upload compiled DEB
+      - name: Upload compiled DEB artifact
         uses: actions/upload-artifact@v4
         with:
           name: WatusiServiceDiag-rootless-DEB
           path: packages/*.deb
           if-no-files-found: error
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(awk '/^Version:/ {print $2}' control)
+          TAG="v${VERSION}"
+          DEB=$(find packages -type f -name '*.deb' | head -n 1)
+          test -n "$DEB"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$DEB" --clobber
+          else
+            gh release create "$TAG" "$DEB" \
+              --target "${GITHUB_SHA}" \
+              --title "WatusiServiceDiag ${VERSION}" \
+              --notes "Diagnostic-only rootless Dopamine tweak for investigating WhatsApp/Watusi ServiceExtension crashes. Records effective Jetsam limits, memory footprint, process disappearance, Objective-C exceptions, and common termination paths. Does not change memory limits."
+          fi
