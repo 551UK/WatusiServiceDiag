@@ -1,0 +1,42 @@
+#!/bin/sh
+# Collect WatusiServiceDiag's file log, unified log, and paths to recent crash/Jetsam reports.
+# Run as root after reproducing the ServiceExtension failure.
+
+STAMP="$(date '+%Y%m%d-%H%M%S')"
+OUT="/var/mobile/Library/Logs/WatusiServiceDiag-report-${STAMP}.txt"
+
+{
+  echo "WatusiServiceDiag report"
+  echo "Generated: $(date)"
+  echo ""
+
+  echo "==================== tweak file log ===================="
+  if [ -f /var/mobile/Library/Logs/WatusiServiceDiag.log ]; then
+    cat /var/mobile/Library/Logs/WatusiServiceDiag.log
+  else
+    echo "WatusiServiceDiag.log not found"
+  fi
+
+  echo ""
+  echo "==================== unified log (last 30m) ============"
+  if command -v log >/dev/null 2>&1; then
+    log show --last 30m --style compact --predicate 'subsystem == "com.551.watusiservicediag"' 2>&1
+  else
+    echo "log command not found"
+  fi
+
+  echo ""
+  echo "==================== candidate crash/Jetsam reports ===="
+  for ROOT in \
+      /var/mobile/Library/Logs/CrashReporter \
+      /var/mobile/Library/Logs/CrashReporter/DiagnosticLogs; do
+    if [ -d "$ROOT" ]; then
+      find "$ROOT" -type f \( -iname '*ServiceExtension*.ips' -o -iname 'JetsamEvent*.ips' \) -print 2>/dev/null | tail -n 30
+    fi
+  done
+} > "$OUT" 2>&1
+
+chmod 0644 "$OUT"
+chown mobile:mobile "$OUT" 2>/dev/null || true
+
+echo "$OUT"
